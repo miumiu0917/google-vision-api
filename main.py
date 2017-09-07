@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
 import urllib.request
 import json
+import argparse
+import base64
 
 
-def main():
-  url = "https://vision.googleapis.com/v1/images:annotate"
+def api_key():
+  with open('./resource/.env', 'r') as f:
+    return f.read()
+
+
+def main(photo_file):
+  url = "https://vision.googleapis.com/v1/images:annotate?key=" + api_key()
   method = "POST"
   headers = {"Content-Type": "application/json"}
   with open(photo_file, 'rb') as image:
@@ -17,7 +24,7 @@ def main():
           },
           "features":[
             {
-              "type":"LABEL_DETECTION",
+              "type":"TEXT_DETECTION",
               "maxResults":1
             }
           ]
@@ -25,10 +32,14 @@ def main():
       ]
     }
     json_data = json.dumps(param).encode("utf-8")
-    request = url.request.Reauest(url, data=json, method=method, headers=headers)
-    with urllib.request.urlopen(reques) as response:
+    request = urllib.request.Request(url, data=json_data, method=method, headers=headers)
+    with urllib.request.urlopen(request) as response:
       response_body = response.read().decode('utf-8')
       print(response_body)
 
+
 if __name__ == '__main__':
-  main()
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--image_file', help='The image you\'d like to detect.')
+  args = parser.parse_args()
+  main(args.image_file)
